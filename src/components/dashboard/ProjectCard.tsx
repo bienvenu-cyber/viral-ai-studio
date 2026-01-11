@@ -18,6 +18,7 @@ interface ProjectCardProps {
   updatedAt: string;
   isPublished?: boolean;
   index?: number;
+  onDelete?: (id: string) => void;
 }
 
 const ProjectCard = ({
@@ -28,7 +29,15 @@ const ProjectCard = ({
   updatedAt,
   isPublished,
   index = 0,
+  onDelete,
 }: ProjectCardProps) => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(id);
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -80,7 +89,10 @@ const ProjectCard = ({
                 Rename
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2 text-destructive">
+              <DropdownMenuItem
+                className="flex items-center gap-2 text-destructive"
+                onClick={handleDelete}
+              >
                 <Trash2 className="h-4 w-4" />
                 Delete
               </DropdownMenuItem>
