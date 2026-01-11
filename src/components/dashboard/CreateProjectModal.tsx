@@ -11,13 +11,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { createProject } from "@/services/pocketbase";
+import { toast } from "sonner";
 
 interface CreateProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onProjectCreated?: () => void;
 }
 
-const CreateProjectModal = ({ open, onOpenChange }: CreateProjectModalProps) => {
+const CreateProjectModal = ({ open, onOpenChange, onProjectCreated }: CreateProjectModalProps) => {
   const [projectName, setProjectName] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,14 +31,27 @@ const CreateProjectModal = ({ open, onOpenChange }: CreateProjectModalProps) => 
     
     setIsGenerating(true);
     
-    // Simulate project creation
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const projectId = Math.random().toString(36).substr(2, 9);
-    onOpenChange(false);
-    navigate(`/editor/${projectId}`, { 
-      state: { prompt: aiPrompt, projectName } 
-    });
+    try {
+      const project = await createProject({
+        name: projectName.trim(),
+        description: aiPrompt || `Created with AI prompt`,
+      });
+      
+      toast.success("Project created!");
+      onProjectCreated?.();
+      onOpenChange(false);
+      setProjectName("");
+      setAiPrompt("");
+      
+      navigate(`/editor/${project.id}`, { 
+        state: { prompt: aiPrompt, projectName } 
+      });
+    } catch (error) {
+      toast.error("Failed to create project");
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (

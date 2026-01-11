@@ -1,44 +1,39 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Sparkles, Zap } from "lucide-react";
+import { Plus, Search, Sparkles, Zap, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/layout/Navbar";
 import ProjectCard from "@/components/dashboard/ProjectCard";
 import CreateProjectModal from "@/components/dashboard/CreateProjectModal";
-
-// Mock data
-const mockProjects = [
-  {
-    id: "1",
-    name: "Startup Landing",
-    description: "Modern SaaS landing page with hero section",
-    updatedAt: "2 hours ago",
-    isPublished: true,
-  },
-  {
-    id: "2",
-    name: "Portfolio Site",
-    description: "Personal portfolio with project showcase",
-    updatedAt: "1 day ago",
-    isPublished: false,
-  },
-  {
-    id: "3",
-    name: "E-commerce Store",
-    description: "Online store with product listings",
-    updatedAt: "3 days ago",
-    isPublished: true,
-  },
-];
+import { useProjects } from "@/hooks/useProjects";
+import { formatDistanceToNow } from "date-fns";
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  const { projects, loading, remove, refetch } = useProjects();
 
-  const filteredProjects = mockProjects.filter((project) =>
+  const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatUpdatedAt = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch {
+      return "recently";
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    await remove(id);
+  };
+
+  const handleProjectCreated = () => {
+    refetch();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,8 +80,15 @@ const Dashboard = () => {
           </Button>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+
         {/* Empty State */}
-        {filteredProjects.length === 0 && (
+        {!loading && filteredProjects.length === 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -108,10 +110,19 @@ const Dashboard = () => {
         )}
 
         {/* Projects Grid */}
-        {filteredProjects.length > 0 && (
+        {!loading && filteredProjects.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
-              <ProjectCard key={project.id} {...project} index={index} />
+              <ProjectCard
+                key={project.id}
+                id={project.id}
+                name={project.name}
+                description={project.description}
+                updatedAt={formatUpdatedAt(project.updated)}
+                isPublished={project.published}
+                index={index}
+                onDelete={handleDeleteProject}
+              />
             ))}
           </div>
         )}
@@ -120,6 +131,7 @@ const Dashboard = () => {
       <CreateProjectModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
+        onProjectCreated={handleProjectCreated}
       />
     </div>
   );
