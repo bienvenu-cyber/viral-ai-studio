@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Check,
   Github,
   Loader2,
   Rocket,
-  ArrowRight,
   Edit3,
   Sparkles,
   ExternalLink,
+  Download,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import {
+  isConnected,
+  getCurrentUser,
+  mockOAuthFlow,
+  initiateOAuth,
+  isGitHubConfigured,
+  createRepository,
+  pushToRepository,
+  exportAsZip,
+  disconnect,
+  type GitHubUser,
+  type PushResult,
+} from "@/services/github";
 
 interface PublishModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  html?: string;
+  css?: string;
+  projectName?: string;
 }
 
 type Step = "generate" | "edit" | "connect" | "deploy";
@@ -33,29 +51,105 @@ const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
   { id: "deploy", label: "Deploy", icon: <Rocket className="h-4 w-4" /> },
 ];
 
-const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
+const PublishModal = ({ 
+  open, 
+  onOpenChange, 
+  html = '', 
+  css = '',
+  projectName = 'my-viral-site'
+}: PublishModalProps) => {
   const [currentStep, setCurrentStep] = useState<Step>("connect");
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [repoName, setRepoName] = useState("my-viral-site");
+  const [githubConnected, setGithubConnected] = useState(false);
+  const [githubUser, setGithubUser] = useState<GitHubUser | null>(null);
+  const [repoName, setRepoName] = useState(projectName.toLowerCase().replace(/\s+/g, '-'));
   const [isDeploying, setIsDeploying] = useState(false);
-  const [isDeployed, setIsDeployed] = useState(false);
+  const [deployResult, setDeployResult] = useState<PushResult | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Check GitHub connection status on mount
+  useEffect(() => {
+    if (open) {
+      const connected = isConnected();
+      setGithubConnected(connected);
+      if (connected) {
+        setGithubUser(getCurrentUser());
+        setCurrentStep("deploy");
+      } else {
+        setCurrentStep("connect");
+      }
+      setDeployResult(null);
+    }
+  }, [open]);
 
   const handleGitHubConnect = async () => {
     setIsConnecting(true);
-    // Simulate OAuth flow
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsConnecting(false);
-    setIsConnected(true);
-    setCurrentStep("deploy");
+    
+    try {
+      if (isGitHubConfigured()) {
+        // Real OAuth flow - redirects to GitHub
+        initiateOAuth();
+        return;
+      }
+      
+      // Mock OAuth flow for demo
+      const user = await mockOAuthFlow();
+      if (user) {
+        setGithubUser(user);
+        setGithubConnected(true);
+        setCurrentStep("deploy");
+        toast.success("Connected to GitHub!");
+      }
+    } catch (error) {
+      toast.error("Failed to connect to GitHub");
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setGithubConnected(false);
+    setGithubUser(null);
+    setCurrentStep("connect");
+    toast.success("Disconnected from GitHub");
   };
 
   const handleDeploy = async () => {
+    if (!repoName.trim()) {
+      toast.error("Please enter a repository name");
+      return;
+    }
+
     setIsDeploying(true);
-    // Simulate deployment
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setIsDeploying(false);
-    setIsDeployed(true);
+    
+    try {
+      const result = await pushToRepository(repoName, html, css);
+      
+      if (result.success) {
+        setDeployResult(result);
+        toast.success("Successfully pushed to GitHub!");
+      } else {
+        toast.error(result.error || "Failed to deploy");
+      }
+    } catch (error) {
+      toast.error("Deployment failed. Please try again.");
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  const handleExportZip = async () => {
+    setIsExporting(true);
+    
+    try {
+      await exportAsZip(html, css, repoName || projectName);
+      toast.success("ZIP file downloaded!");
+    } catch (error) {
+      toast.error("Failed to export. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const getStepStatus = (step: Step) => {
@@ -63,15 +157,20 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
     const currentIndex = steps.findIndex((s) => s.id === currentStep);
 
     if (step === "generate" || step === "edit") return "completed";
-    if (step === "connect" && isConnected) return "completed";
-    if (step === "deploy" && isDeployed) return "completed";
+    if (step === "connect" && githubConnected) return "completed";
+    if (step === "deploy" && deployResult?.success) return "completed";
     if (stepIndex < currentIndex) return "completed";
     if (stepIndex === currentIndex) return "current";
     return "upcoming";
   };
 
+  const handleClose = () => {
+    setDeployResult(null);
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="glass-card border-border/50 sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
@@ -134,7 +233,36 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
 
         {/* Step Content */}
         <div className="space-y-6">
-          {currentStep === "connect" && !isConnected && (
+          {/* Export ZIP Option - Always visible */}
+          <div className="p-4 rounded-xl bg-secondary/20 border border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Download className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Download as ZIP</p>
+                  <p className="text-xs text-muted-foreground">Export without GitHub</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportZip}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Export
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Connect Step */}
+          {currentStep === "connect" && !githubConnected && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -149,6 +277,11 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
                   Connect your GitHub account to push your generated code and
                   enable automatic deployments.
                 </p>
+                {!isGitHubConfigured() && (
+                  <p className="text-xs text-amber-500/80 mb-4">
+                    ⚠️ GitHub OAuth not configured - using demo mode
+                  </p>
+                )}
                 <Button
                   variant="glow"
                   onClick={handleGitHubConnect}
@@ -171,31 +304,46 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
             </motion.div>
           )}
 
-          {(currentStep === "deploy" || isConnected) && !isDeployed && (
+          {/* Deploy Step */}
+          {(currentStep === "deploy" || githubConnected) && !deployResult?.success && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
+              {/* Connected User */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-3">
+                  {githubUser?.avatar_url ? (
+                    <img 
+                      src={githubUser.avatar_url} 
+                      alt={githubUser.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <User className="h-5 w-5 text-primary" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium">{githubUser?.name || 'Connected'}</p>
+                    <p className="text-xs text-muted-foreground">@{githubUser?.login}</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={handleDisconnect}>
+                  Disconnect
+                </Button>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Repository Name</label>
                 <Input
                   value={repoName}
-                  onChange={(e) => setRepoName(e.target.value)}
+                  onChange={(e) => setRepoName(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                   placeholder="my-website"
                   className="bg-secondary/50"
                 />
                 <p className="text-xs text-muted-foreground">
-                  This will create a new repository: github.com/your-username/
-                  {repoName}
+                  github.com/{githubUser?.login || 'username'}/{repoName || 'repo-name'}
                 </p>
-              </div>
-
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                <Check className="h-4 w-4 text-primary" />
-                <span className="text-sm text-foreground">
-                  GitHub connected successfully
-                </span>
               </div>
 
               <Button
@@ -207,19 +355,20 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
                 {isDeploying ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Deploying...
+                    Pushing to GitHub...
                   </>
                 ) : (
                   <>
                     <Rocket className="h-4 w-4" />
-                    Push to GitHub & Deploy
+                    Push to GitHub
                   </>
                 )}
               </Button>
             </motion.div>
           )}
 
-          {isDeployed && (
+          {/* Success State */}
+          {deployResult?.success && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -230,25 +379,41 @@ const PublishModal = ({ open, onOpenChange }: PublishModalProps) => {
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">
-                  Successfully Deployed! 🎉
+                  Successfully Pushed! 🎉
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Your site is now live and ready to share.
+                  Your code is now on GitHub and ready to deploy.
                 </p>
               </div>
-              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-1">Your site URL</p>
-                <a
-                  href="#"
-                  className="text-primary hover:underline flex items-center justify-center gap-1"
-                >
-                  https://{repoName}.vercel.app
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50 space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Repository</p>
+                  <a
+                    href={deployResult.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline flex items-center justify-center gap-1"
+                  >
+                    {deployResult.repoUrl}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Deploy with Vercel, Netlify, or GitHub Pages
+                </p>
               </div>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Close
-              </Button>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={handleClose}>
+                  Close
+                </Button>
+                <Button 
+                  variant="glow"
+                  onClick={() => window.open(deployResult.repoUrl, '_blank')}
+                >
+                  <Github className="h-4 w-4" />
+                  View on GitHub
+                </Button>
+              </div>
             </motion.div>
           )}
         </div>
