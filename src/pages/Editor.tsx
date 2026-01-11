@@ -10,10 +10,10 @@ import {
   Rocket,
   Save,
   Undo,
-  Code,
   Smartphone,
   Monitor,
   Tablet,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -21,6 +21,8 @@ import AIPromptBar from "@/components/editor/AIPromptBar";
 import PublishModal from "@/components/editor/PublishModal";
 import { generateWithAI } from "@/services/ai";
 import { blocks } from "@/config/grapesjs-blocks";
+import { exportAsZip } from "@/services/github";
+import { saveProjectContent, isConfigured as isPocketBaseConfigured } from "@/services/pocketbase";
 
 const Editor = () => {
   const { id } = useParams();
@@ -32,6 +34,7 @@ const Editor = () => {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isPreview, setIsPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const initialPrompt = (location.state as any)?.prompt || "";
   const projectName = (location.state as any)?.projectName || "Untitled Project";
@@ -109,7 +112,7 @@ const Editor = () => {
     if (!editor) return { html: '', css: '' };
     return {
       html: editor.getHtml(),
-      css: editor.getCss(),
+      css: editor.getCss() || '',
     };
   };
 
@@ -124,9 +127,48 @@ const Editor = () => {
     editor.setDevice(deviceMap[newDevice]);
   };
 
-  const handleSave = () => {
-    toast.success("Project saved successfully!");
+  const handleSave = async () => {
+    if (!id) {
+      toast.success("Project saved locally!");
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
+      const { html, css } = getEditorContent();
+      
+      if (isPocketBaseConfigured()) {
+        await saveProjectContent(id, html, css);
+        toast.success("Project saved to cloud!");
+      } else {
+        // Save to localStorage as fallback
+        localStorage.setItem(`project_${id}`, JSON.stringify({ html, css }));
+        toast.success("Project saved locally!");
+      }
+    } catch (error) {
+      toast.error("Failed to save project");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const handleExport = async () => {
+    const { html, css } = getEditorContent();
+    
+    try {
+      await exportAsZip(html, css, projectName);
+      toast.success("Project exported as ZIP!");
+    } catch (error) {
+      toast.error("Failed to export project");
+    }
+  };
+
+  const handlePublish = () => {
+    setIsPublishModalOpen(true);
+  };
+
+  const { html, css } = getEditorContent();
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
@@ -201,10 +243,23 @@ const Editor = () => {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleSave}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleExport}
+            title="Export as ZIP"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleSave}
+            disabled={isSaving}
+          >
             <Save className="h-4 w-4" />
           </Button>
-          <Button variant="glow" onClick={() => setIsPublishModalOpen(true)}>
+          <Button variant="glow" onClick={handlePublish}>
             <Rocket className="h-4 w-4" />
             Publish
           </Button>
@@ -236,6 +291,9 @@ const Editor = () => {
       <PublishModal
         open={isPublishModalOpen}
         onOpenChange={setIsPublishModalOpen}
+        html={editor?.getHtml() || ''}
+        css={editor?.getCss() || ''}
+        projectName={projectName}
       />
     </div>
   );
