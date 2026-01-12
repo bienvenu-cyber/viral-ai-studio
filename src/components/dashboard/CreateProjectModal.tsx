@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Wand2, Layout, Briefcase, FileText, ShoppingBag, Image, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { createProject } from "@/services/pocketbase";
 import { toast } from "sonner";
+import { templates } from "@/components/templates/TemplatesGallery";
 
 interface CreateProjectModalProps {
   open: boolean;
@@ -20,9 +21,19 @@ interface CreateProjectModalProps {
   onProjectCreated?: () => void;
 }
 
+const quickTemplates = [
+  { id: "blank", name: "Blank", icon: <Layout className="h-5 w-5" />, prompt: "" },
+  { id: "landing", name: "Landing Page", icon: <Sparkles className="h-5 w-5" />, prompt: "Create a modern SaaS landing page with hero, features, and pricing" },
+  { id: "portfolio", name: "Portfolio", icon: <Briefcase className="h-5 w-5" />, prompt: "Create a minimal creative portfolio website" },
+  { id: "blog", name: "Blog", icon: <FileText className="h-5 w-5" />, prompt: "Create a clean blog layout with featured posts" },
+  { id: "ecommerce", name: "E-commerce", icon: <ShoppingBag className="h-5 w-5" />, prompt: "Create an e-commerce product showcase" },
+  { id: "gallery", name: "Gallery", icon: <Image className="h-5 w-5" />, prompt: "Create a beautiful image gallery" },
+];
+
 const CreateProjectModal = ({ open, onOpenChange, onProjectCreated }: CreateProjectModalProps) => {
   const [projectName, setProjectName] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState("blank");
   const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
 
@@ -96,19 +107,33 @@ const CreateProjectModal = ({ open, onOpenChange, onProjectCreated }: CreateProj
           </div>
 
           {/* Quick Templates */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label className="text-sm font-medium text-muted-foreground">
-              Or start with a template
+              Start with a template
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {["Landing Page", "Portfolio", "Blog"].map((template) => (
-                <button
-                  key={template}
-                  onClick={() => setAiPrompt(`Create a ${template.toLowerCase()}`)}
-                  className="p-3 text-sm text-center rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary hover:border-primary/30 transition-all duration-200"
+            <div className="grid grid-cols-3 gap-3">
+              {quickTemplates.map((template) => (
+                <motion.button
+                  key={template.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setSelectedTemplate(template.id);
+                    setAiPrompt(template.prompt);
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
+                    selectedTemplate === template.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border/50 bg-secondary/30 hover:bg-secondary hover:border-primary/30"
+                  }`}
                 >
-                  {template}
-                </button>
+                  <div className={`p-2 rounded-lg ${
+                    selectedTemplate === template.id ? "bg-primary/20" : "bg-secondary"
+                  }`}>
+                    {template.icon}
+                  </div>
+                  <span className="text-sm font-medium">{template.name}</span>
+                </motion.button>
               ))}
             </div>
           </div>
