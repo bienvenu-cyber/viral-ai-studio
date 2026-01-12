@@ -32,13 +32,33 @@ export function useProjects() {
     fetchProjects();
   }, [fetchProjects]);
 
-  const create = useCallback(async (data: { name: string; description?: string }) => {
+  const create = useCallback(async (data: { name: string; description?: string; html?: string; css?: string }) => {
     try {
       const project = await createProject(data);
       setProjects(prev => [project, ...prev]);
       return project;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create project';
+      throw new Error(message);
+    }
+  }, []);
+
+  const duplicate = useCallback(async (id: string) => {
+    try {
+      const original = await getProject(id);
+      if (!original) {
+        throw new Error('Project not found');
+      }
+      const project = await createProject({
+        name: `${original.name} (Copy)`,
+        description: original.description,
+        html: original.html,
+        css: original.css,
+      });
+      setProjects(prev => [project, ...prev]);
+      return project;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to duplicate project';
       throw new Error(message);
     }
   }, []);
@@ -72,6 +92,7 @@ export function useProjects() {
     create,
     update,
     remove,
+    duplicate,
     getProject,
   };
 }

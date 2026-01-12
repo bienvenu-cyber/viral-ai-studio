@@ -14,10 +14,13 @@ import {
   Monitor,
   Tablet,
   Download,
+  Blocks,
+  PanelRightClose,
+  PanelRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import AIPromptBar from "@/components/editor/AIPromptBar";
+import AIChatSidebar from "@/components/editor/AIChatSidebar";
 import PublishModal from "@/components/editor/PublishModal";
 import { generateWithAI } from "@/services/ai";
 import { blocks } from "@/config/grapesjs-blocks";
@@ -35,6 +38,8 @@ const Editor = () => {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAIChatCollapsed, setIsAIChatCollapsed] = useState(false);
+  const [isBlocksPanelOpen, setIsBlocksPanelOpen] = useState(false);
 
   const initialPrompt = (location.state as any)?.prompt || "";
   const projectName = (location.state as any)?.projectName || "Untitled Project";
@@ -268,24 +273,61 @@ const Editor = () => {
 
       {/* Editor Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Blocks Panel */}
-        <div className="w-64 border-r border-border/50 bg-card/50 overflow-y-auto hidden lg:block">
-          <div className="p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">
-              Blocks
-            </h3>
-            <div id="blocks-panel" />
-          </div>
-        </div>
+        {/* AI Chat Sidebar (Left) */}
+        <AIChatSidebar
+          onGenerate={handleAIGenerate}
+          isGenerating={isGenerating}
+          isCollapsed={isAIChatCollapsed}
+          onToggleCollapse={() => setIsAIChatCollapsed(!isAIChatCollapsed)}
+        />
 
         {/* Canvas */}
         <div className="flex-1 bg-muted/30 overflow-hidden relative">
           <div ref={editorRef} className="h-full" />
         </div>
-      </div>
 
-      {/* AI Prompt Bar */}
-      <AIPromptBar onGenerate={handleAIGenerate} isGenerating={isGenerating} />
+        {/* Blocks Panel (Right) */}
+        <div className={`border-l border-border/50 bg-card/50 transition-all duration-300 ${isBlocksPanelOpen ? "w-64" : "w-12"}`}>
+          {isBlocksPanelOpen ? (
+            <div className="h-full flex flex-col">
+              <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Blocks className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">Blocks</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsBlocksPanelOpen(false)}
+                  className="h-8 w-8"
+                >
+                  <PanelRightClose className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <div id="blocks-panel" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsBlocksPanelOpen(true)}
+                className="mb-4"
+              >
+                <PanelRight className="h-4 w-4" />
+              </Button>
+              <div className="flex flex-col items-center gap-2">
+                <Blocks className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground [writing-mode:vertical-lr] rotate-180">
+                  Blocks
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Publish Modal */}
       <PublishModal
