@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import grapesjs, { Editor as GrapesEditor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import {
@@ -17,11 +17,15 @@ import {
   Blocks,
   PanelRightClose,
   PanelRight,
+  LayoutTemplate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import AIChatSidebar from "@/components/editor/AIChatSidebar";
+import AIGeneratingOverlay from "@/components/editor/AIGeneratingOverlay";
 import PublishModal from "@/components/editor/PublishModal";
+import TemplatesGallery, { Template } from "@/components/templates/TemplatesGallery";
+import CollaborationIndicator from "@/components/collaboration/CollaborationIndicator";
 import { generateWithAI } from "@/services/ai";
 import { blocks } from "@/config/grapesjs-blocks";
 import { exportAsZip } from "@/services/github";
@@ -35,6 +39,7 @@ const Editor = () => {
   const [editor, setEditor] = useState<GrapesEditor | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isPreview, setIsPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,6 +48,16 @@ const Editor = () => {
 
   const initialPrompt = (location.state as any)?.prompt || "";
   const projectName = (location.state as any)?.projectName || "Untitled Project";
+
+  const handleSelectTemplate = (template: Template) => {
+    if (editor) {
+      editor.setComponents(template.html);
+      if (template.css) {
+        editor.setStyle(template.css);
+      }
+      toast.success(`Template "${template.name}" applied!`);
+    }
+  };
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -194,6 +209,8 @@ const Editor = () => {
           </Button>
           <div className="h-6 w-px bg-border" />
           <span className="font-medium text-sm">{projectName}</span>
+          <div className="h-6 w-px bg-border" />
+          <CollaborationIndicator projectId={id || ""} />
         </div>
 
         {/* Center - Device Switcher */}
@@ -226,6 +243,15 @@ const Editor = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsTemplatesOpen(true)}
+            title="Templates"
+          >
+            <LayoutTemplate className="h-4 w-4" />
+          </Button>
+          <div className="h-6 w-px bg-border" />
           <Button
             variant="ghost"
             size="icon"
@@ -284,6 +310,9 @@ const Editor = () => {
         {/* Canvas */}
         <div className="flex-1 bg-muted/30 overflow-hidden relative">
           <div ref={editorRef} className="h-full" />
+          <AnimatePresence>
+            <AIGeneratingOverlay isVisible={isGenerating} />
+          </AnimatePresence>
         </div>
 
         {/* Blocks Panel (Right) */}
@@ -336,6 +365,13 @@ const Editor = () => {
         html={editor?.getHtml() || ''}
         css={editor?.getCss() || ''}
         projectName={projectName}
+      />
+
+      {/* Templates Gallery */}
+      <TemplatesGallery
+        open={isTemplatesOpen}
+        onOpenChange={setIsTemplatesOpen}
+        onSelectTemplate={handleSelectTemplate}
       />
     </div>
   );
