@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
-  const { projects, loading, remove, refetch } = useProjects();
+  const { projects, loading, remove, duplicate, refetch } = useProjects();
 
   const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -29,6 +29,10 @@ const Dashboard = () => {
 
   const handleDeleteProject = async (id: string) => {
     await remove(id);
+  };
+
+  const handleDuplicateProject = async (id: string) => {
+    await duplicate(id);
   };
 
   const handleProjectCreated = () => {
@@ -122,6 +126,7 @@ const Dashboard = () => {
                 isPublished={project.published}
                 index={index}
                 onDelete={handleDeleteProject}
+                onDuplicate={handleDuplicateProject}
               />
             ))}
           </div>

@@ -130,6 +130,82 @@ export async function loginWithOAuth(provider: string): Promise<User | null> {
 }
 
 /**
+ * Request password reset
+ */
+export async function requestPasswordReset(email: string): Promise<boolean> {
+  if (!isConfigured()) {
+    console.warn('PocketBase not configured - mock password reset');
+    return true;
+  }
+
+  try {
+    await pb.collection('users').requestPasswordReset(email);
+    return true;
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Confirm password reset with token
+ */
+export async function confirmPasswordReset(
+  token: string,
+  password: string,
+  passwordConfirm: string
+): Promise<boolean> {
+  if (!isConfigured()) {
+    console.warn('PocketBase not configured - mock password reset confirm');
+    return true;
+  }
+
+  try {
+    await pb.collection('users').confirmPasswordReset(token, password, passwordConfirm);
+    return true;
+  } catch (error) {
+    console.error('Password reset confirm error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update user profile
+ */
+export async function updateProfile(data: { name?: string; avatar?: File }): Promise<User | null> {
+  if (!isConfigured()) {
+    const user = getCurrentUser();
+    if (user && data.name) {
+      user.name = data.name;
+      sessionStorage.setItem('mock_user', JSON.stringify(user));
+    }
+    return user;
+  }
+
+  const user = pb.authStore.model;
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+
+  try {
+    const formData = new FormData();
+    if (data.name) formData.append('name', data.name);
+    if (data.avatar) formData.append('avatar', data.avatar);
+
+    const updated = await pb.collection('users').update(user.id, formData);
+    return {
+      id: updated.id,
+      email: updated.email,
+      name: updated.name,
+      avatar: updated.avatar ? pb.files.getUrl(updated, updated.avatar) : undefined,
+    };
+  } catch (error) {
+    console.error('Update profile error:', error);
+    throw error;
+  }
+}
+
+/**
  * Logout current user
  */
 export function logout(): void {

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MoreHorizontal, ExternalLink, Edit, Trash2, Globe } from "lucide-react";
+import { MoreHorizontal, ExternalLink, Edit, Trash2, Globe, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,6 +19,7 @@ interface ProjectCardProps {
   isPublished?: boolean;
   index?: number;
   onDelete?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
 }
 
 const ProjectCard = ({
@@ -30,6 +31,7 @@ const ProjectCard = ({
   isPublished,
   index = 0,
   onDelete,
+  onDuplicate,
 }: ProjectCardProps) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,6 +40,15 @@ const ProjectCard = ({
       onDelete(id);
     }
   };
+
+  const handleDuplicate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onDuplicate) {
+      onDuplicate(id);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -87,6 +98,13 @@ const ProjectCard = ({
               <DropdownMenuItem className="flex items-center gap-2">
                 <Edit className="h-4 w-4" />
                 Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2"
+                onClick={handleDuplicate}
+              >
+                <Copy className="h-4 w-4" />
+                Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

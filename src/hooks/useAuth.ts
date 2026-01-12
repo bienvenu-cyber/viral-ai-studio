@@ -7,6 +7,9 @@ import {
   getCurrentUser,
   isAuthenticated,
   onAuthStateChange,
+  requestPasswordReset as pbRequestPasswordReset,
+  confirmPasswordReset as pbConfirmPasswordReset,
+  updateProfile as pbUpdateProfile,
   type User,
 } from '@/services/pocketbase';
 
@@ -79,6 +82,55 @@ export function useAuth() {
     }
   }, []);
 
+  const requestPasswordReset = useCallback(async (email: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await pbRequestPasswordReset(email);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Password reset request failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const confirmPasswordReset = useCallback(async (token: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await pbConfirmPasswordReset(token, password, password);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Password reset failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateProfile = useCallback(async (data: { name?: string; avatar?: File }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const updatedUser = await pbUpdateProfile(data);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Profile update failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(() => {
     pbLogout();
     setUser(null);
@@ -92,6 +144,9 @@ export function useAuth() {
     login,
     register,
     loginWithGitHub,
+    requestPasswordReset,
+    confirmPasswordReset,
+    updateProfile,
     logout,
   };
 }
