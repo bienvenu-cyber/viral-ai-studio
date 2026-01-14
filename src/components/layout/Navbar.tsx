@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, LayoutDashboard, Settings, User, LogOut } from "lucide-react";
+import { Zap, LayoutDashboard, Settings, User, LogOut, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
+import CreditsDisplay from "@/components/credits/CreditsDisplay";
 
 const Navbar = () => {
   const location = useLocation();
@@ -61,6 +62,7 @@ const Navbar = () => {
 
           {/* User Menu */}
           <div className="flex items-center gap-3">
+            {isAuthenticated && <CreditsDisplay variant="compact" />}
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -89,6 +91,12 @@ const Navbar = () => {
                     <Link to="/settings">
                       <Settings className="h-4 w-4" />
                       Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="flex items-center gap-2 cursor-pointer">
+                    <Link to="/billing">
+                      <Receipt className="h-4 w-4" />
+                      Billing
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
