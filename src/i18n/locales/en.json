@@ -1,0 +1,430 @@
+{
+  "common": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "billing": "Billing",
+    "profile": "Profile",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign up",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "close": "Close",
+    "or": "or",
+    "and": "and",
+    "currency": "FCFA"
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI-Powered Website Builder",
+      "title": "Build websites that go",
+      "titleHighlight": "viral",
+      "description": "Describe your vision, and let AI create stunning, production-ready websites. Edit with drag-and-drop, then deploy to GitHub in one click.",
+      "cta": "Start Building Free",
+      "viewGithub": "View on GitHub"
+    },
+    "features": {
+      "title": "Everything you need to build",
+      "subtitle": "From AI generation to GitHub deployment, Viral handles it all.",
+      "ai": {
+        "title": "AI-Powered Generation",
+        "description": "Describe your website in plain English and watch as AI creates beautiful, responsive designs."
+      },
+      "editor": {
+        "title": "Visual Editor",
+        "description": "Drag-and-drop editor with full control. Modify any element with ease."
+      },
+      "github": {
+        "title": "GitHub Integration",
+        "description": "Push your code directly to GitHub. Create repos and deploy with one click."
+      },
+      "deploy": {
+        "title": "Instant Deploy",
+        "description": "Go live in seconds with automatic deployments."
+      },
+      "domains": {
+        "title": "Custom Domains",
+        "description": "Connect your own domain and make your website truly yours."
+      },
+      "fast": {
+        "title": "Lightning Fast",
+        "description": "Optimized code output ensures your websites load blazingly fast."
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Three simple steps to create your website",
+      "step1": {
+        "title": "Describe your vision",
+        "description": "Tell the AI what you want to create in natural language."
+      },
+      "step2": {
+        "title": "Customize the design",
+        "description": "Use the visual editor to adjust every detail to your liking."
+      },
+      "step3": {
+        "title": "Publish in one click",
+        "description": "Deploy your site to GitHub or export the code."
+      }
+    },
+    "pricing": {
+      "title": "Simple and transparent pricing",
+      "subtitle": "Start free, upgrade when you're ready.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "popular": "Popular",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "viewAll": "View all details"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "Everything you need to know about Viral",
+      "q1": "How does the AI work?",
+      "a1": "Our AI analyzes your description and generates optimized HTML/CSS code. It understands context and creates modern designs tailored to your needs.",
+      "q2": "Can I export my code?",
+      "a2": "Yes! You can export your project as a ZIP or push it directly to GitHub. The generated code is clean and maintainable.",
+      "q3": "Are there any hidden fees?",
+      "a3": "Absolutely not. Our pricing is transparent. You only pay for your chosen plan, no surprises.",
+      "q4": "How does the credit system work?",
+      "a4": "Each AI generation consumes credits. Credits renew each month according to your plan.",
+      "q5": "Can I cancel anytime?",
+      "a5": "Yes, you can cancel your subscription at any time. You keep access until the end of your billing period."
+    },
+    "cta": {
+      "title": "Ready to build something amazing?",
+      "subtitle": "Join thousands of creators building stunning websites with Viral. Start free.",
+      "button": "Start Building Now"
+    },
+    "footer": {
+      "newsletter": {
+        "title": "Stay informed",
+        "subtitle": "Get the latest news and updates from Viral.",
+        "placeholder": "your@email.com",
+        "button": "Subscribe",
+        "success": "Thanks! You're subscribed to our newsletter."
+      },
+      "tagline": "Create amazing websites with AI.",
+      "product": "Product",
+      "company": "Company",
+      "resources": "Resources",
+      "legal": "Legal",
+      "copyright": "© {{year}} Viral. All rights reserved."
+    }
+  },
+  "auth": {
+    "login": "Log in",
+    "signup": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "continueWith": "Continue with {{provider}}"
+  },
+  "dashboard": {
+    "title": "My projects",
+    "newProject": "New project",
+    "noProjects": "No projects yet",
+    "createFirst": "Create your first website with AI"
+  },
+  "editor": {
+    "untitled": "Untitled Project",
+    "save": "Save",
+    "publish": "Publish",
+    "export": "Export",
+    "preview": "Preview",
+    "undo": "Undo",
+    "redo": "Redo",
+    "history": "History",
+    "templates": "Templates",
+    "blocks": "Blocks",
+    "generating": "Generating...",
+    "generatingAI": "AI is generating your content"
+  },
+  "credits": {
+    "title": "Credits",
+    "remaining": "{{used}} / {{total}} used",
+    "resetDate": "Renews on {{date}}",
+    "buyMore": "Buy more",
+    "unlimited": "Unlimited"
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "security": "Security",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "twoFactor": "Two-factor authentication",
+    "connections": "Connections",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete account",
+    "deleteWarning": "This action is irreversible. All your data will be deleted."
+  },
+  "billing": {
+    "title": "Billing",
+    "currentPlan": "Current plan",
+    "active": "Active",
+    "renewal": "Renews on {{date}}",
+    "changePlan": "Change plan",
+    "upgrade": "Upgrade",
+    "paymentMethod": "Payment method",
+    "noPaymentMethod": "None",
+    "invoices": "Invoice history",
+    "noInvoices": "No invoices yet",
+    "paid": "Paid",
+    "manageLygos": "Manage subscription on Lygos"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "summary": "Summary",
+    "plan": "{{name}} Plan",
+    "billingMonthly": "Monthly billing",
+    "billingYearly": "Yearly billing",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "paymentInfo": "Payment information",
+    "phoneNumber": "Phone number",
+    "phonePlaceholder": "+237 6XX XXX XXX",
+    "operator": "Operator",
+    "processing": "Processing...",
+    "pay": "Pay {{amount}}",
+    "secure": "100% secure payment with Lygos Pay",
+    "terms": "By proceeding, you accept our",
+    "termsLink": "terms of service",
+    "privacyLink": "privacy policy",
+    "backToPricing": "Back to pricing"
+  },
+  "pricing": {
+    "title": "Choose your plan",
+    "subtitle": "Simple and transparent pricing. Start free, upgrade when you're ready.",
+    "free": {
+      "name": "Free",
+      "description": "Perfect for discovering Viral"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For serious creators"
+    },
+    "business": {
+      "name": "Business",
+      "description": "For teams and agencies"
+    },
+    "features": {
+      "credits": "{{count}} credits/month",
+      "projects": "{{count}} projects max",
+      "projectsUnlimited": "Unlimited projects",
+      "templates": "Basic templates",
+      "allTemplates": "All templates",
+      "premiumTemplates": "Premium templates",
+      "export": "HTML/CSS export",
+      "domain": "Custom domain",
+      "github": "GitHub integration",
+      "support": "Community support",
+      "prioritySupport": "Priority support",
+      "dedicatedSupport": "24/7 dedicated support",
+      "analytics": "Basic analytics",
+      "advancedAnalytics": "Advanced analytics",
+      "team": "Team collaboration",
+      "api": "API access",
+      "whiteLabel": "White-label",
+      "sso": "SSO / SAML",
+      "noBadge": "No Viral badge",
+      "badge": "Viral badge on sites",
+      "noDomain": "No custom domain"
+    },
+    "startFree": "Start free",
+    "currentPlan": "Current plan",
+    "switchTo": "Switch to {{name}}",
+    "enterprise": {
+      "title": "Need a custom plan?",
+      "subtitle": "For large teams and specific needs, contact us for a custom plan.",
+      "cta": "Contact sales"
+    },
+    "faqLink": "Questions? Check our FAQ"
+  },
+  "pages": {
+    "about": {
+      "title": "About Viral",
+      "subtitle": "The AI-powered website creation platform, designed for Africa.",
+      "mission": {
+        "title": "Our mission",
+        "text": "Democratize web creation in Africa by making development tools accessible to everyone, through artificial intelligence."
+      },
+      "story": {
+        "title": "Our story",
+        "text": "Viral was born from the desire to simplify website creation for African entrepreneurs, creators and businesses. We believe everyone deserves a professional online presence, without needing technical skills."
+      },
+      "values": {
+        "title": "Our values",
+        "innovation": "Innovation",
+        "innovationDesc": "We push the boundaries of AI to create ever more powerful tools.",
+        "accessibility": "Accessibility",
+        "accessibilityDesc": "Technology should be accessible to everyone, everywhere in Africa.",
+        "quality": "Quality",
+        "qualityDesc": "We make no compromises on code and design quality."
+      }
+    },
+    "contact": {
+      "title": "Contact us",
+      "subtitle": "Have a question? A suggestion? We're here to help.",
+      "form": {
+        "name": "Your name",
+        "email": "Your email",
+        "subject": "Subject",
+        "message": "Message",
+        "send": "Send message",
+        "success": "Message sent successfully!",
+        "error": "Error sending. Please try again."
+      },
+      "info": {
+        "email": "contact@viral.africa",
+        "address": "Douala, Cameroon",
+        "hours": "Mon - Fri: 9am - 6pm"
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: {{date}}",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using Viral, you agree to be bound by these terms of service. If you do not accept these terms, please do not use our service."
+        },
+        "services": {
+          "title": "2. Description of Services",
+          "content": "Viral provides an AI-assisted website creation platform. Our services include code generation, visual editing and website deployment."
+        },
+        "accounts": {
+          "title": "3. User Accounts",
+          "content": "You are responsible for maintaining the confidentiality of your login credentials and all activities performed under your account."
+        },
+        "payment": {
+          "title": "4. Payment and Billing",
+          "content": "Subscriptions are billed according to the chosen period (monthly or yearly). Payments are processed securely via Lygos Pay in FCFA."
+        },
+        "intellectual": {
+          "title": "5. Intellectual Property",
+          "content": "You retain all rights to content you create with Viral. However, Viral retains rights to its technology, interface and features."
+        },
+        "termination": {
+          "title": "6. Termination",
+          "content": "We reserve the right to suspend or terminate your account in case of violation of these terms or abuse of the service."
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: {{date}}",
+      "sections": {
+        "collection": {
+          "title": "1. Data Collection",
+          "content": "We collect information you provide during registration and use of our services, including your name, email and payment information."
+        },
+        "usage": {
+          "title": "2. Data Usage",
+          "content": "Your data is used to provide and improve our services, process payments, communicate with you and ensure platform security."
+        },
+        "storage": {
+          "title": "3. Storage and Security",
+          "content": "Your data is stored securely and we use protection measures that comply with industry standards."
+        },
+        "sharing": {
+          "title": "4. Data Sharing",
+          "content": "We never sell your personal data. We may share data with service providers who help us operate the platform."
+        },
+        "rights": {
+          "title": "5. Your Rights",
+          "content": "You have the right to access, modify or delete your personal data. Contact us to exercise these rights."
+        },
+        "cookies": {
+          "title": "6. Cookies",
+          "content": "We use cookies to improve your experience. You can manage your cookie preferences in your browser settings."
+        }
+      }
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "lastUpdated": "Last updated: {{date}}",
+      "intro": "This policy explains how Viral uses cookies and similar technologies.",
+      "what": {
+        "title": "What is a cookie?",
+        "content": "A cookie is a small text file stored on your device when you visit a website. It allows the site to remember your actions and preferences."
+      },
+      "types": {
+        "title": "Types of cookies used",
+        "essential": "Essential cookies: necessary for site operation",
+        "analytics": "Analytics cookies: help us understand site usage",
+        "preferences": "Preference cookies: remember your choices"
+      },
+      "manage": {
+        "title": "Managing cookies",
+        "content": "You can configure your browser to refuse cookies. Note that this may affect some site features."
+      }
+    },
+    "help": {
+      "title": "Help Center",
+      "subtitle": "Find answers to your questions",
+      "search": "Search help...",
+      "categories": {
+        "gettingStarted": "Getting Started",
+        "account": "Account & Billing",
+        "editor": "Editor",
+        "publishing": "Publishing"
+      }
+    },
+    "docs": {
+      "title": "Documentation",
+      "subtitle": "Learn to use Viral like a pro"
+    },
+    "changelog": {
+      "title": "Changelog",
+      "subtitle": "Track the latest Viral updates"
+    },
+    "careers": {
+      "title": "Careers",
+      "subtitle": "Join the Viral team",
+      "intro": "We're looking for passionate talents to build the future of web creation in Africa.",
+      "noPositions": "No open positions at the moment. Send your CV to careers@viral.africa"
+    },
+    "community": {
+      "title": "Community",
+      "subtitle": "Join thousands of creators",
+      "discord": "Join Discord",
+      "twitter": "Follow on Twitter"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "subtitle": "The page you're looking for doesn't exist or has been moved.",
+      "backHome": "Back to home"
+    }
+  },
+  "history": {
+    "title": "Project History",
+    "subtitle": "View and restore previous versions",
+    "noHistory": "No history available",
+    "restore": "Restore",
+    "current": "Current version",
+    "autoSave": "Auto save",
+    "manual": "Manual save"
+  }
+}

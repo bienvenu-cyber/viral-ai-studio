@@ -18,6 +18,7 @@ import {
   PanelRightClose,
   PanelRight,
   LayoutTemplate,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -251,48 +252,36 @@ const Editor = () => {
           >
             <LayoutTemplate className="h-4 w-4" />
           </Button>
-          <div className="h-6 w-px bg-border" />
           <Button
             variant="ghost"
-            size="icon"
-            onClick={() => editor?.UndoManager.undo()}
+            size="sm"
+            onClick={() => navigate(`/history/${id}`)}
+            title="Historique"
+            className="gap-2"
           >
+            <History className="h-4 w-4" />
+            Historique
+          </Button>
+          <div className="h-6 w-px bg-border" />
+          <Button variant="ghost" size="icon" onClick={() => editor?.UndoManager.undo()}>
             <Undo className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => editor?.UndoManager.redo()}
-          >
+          <Button variant="ghost" size="icon" onClick={() => editor?.UndoManager.redo()}>
             <Redo className="h-4 w-4" />
           </Button>
           <div className="h-6 w-px bg-border" />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsPreview(!isPreview)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => setIsPreview(!isPreview)}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleExport}
-            title="Export as ZIP"
-          >
+          <Button variant="ghost" size="icon" onClick={handleExport} title="Export as ZIP">
             <Download className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleSave}
-            disabled={isSaving}
-          >
+          <Button variant="ghost" size="icon" onClick={handleSave} disabled={isSaving}>
             <Save className="h-4 w-4" />
           </Button>
           <Button variant="glow" onClick={handlePublish}>
             <Rocket className="h-4 w-4" />
-            Publish
+            Publier
           </Button>
         </div>
       </motion.header>
