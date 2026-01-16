@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   Receipt, 
   Download, 
   CreditCard, 
   Calendar,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Smartphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,33 +17,38 @@ import { useCredits } from "@/hooks/useCredits";
 import Navbar from "@/components/layout/Navbar";
 import CreditsDisplay from "@/components/credits/CreditsDisplay";
 import { Link } from "react-router-dom";
+import { formatFCFA, PLANS_PRICING } from "@/services/lygos";
 
-// Mock billing history
+// Mock billing history in FCFA
 const invoices = [
   {
     id: "INV-2024-001",
     date: "2024-01-15",
-    amount: 22.80,
+    amount: 9900,
     status: "paid",
     plan: "Pro",
+    method: "MTN Mobile Money"
   },
   {
     id: "INV-2023-012",
     date: "2023-12-15",
-    amount: 22.80,
+    amount: 9900,
     status: "paid",
     plan: "Pro",
+    method: "Orange Money"
   },
   {
     id: "INV-2023-011",
     date: "2023-11-15",
-    amount: 22.80,
+    amount: 9900,
     status: "paid",
     plan: "Pro",
+    method: "MTN Mobile Money"
   },
 ];
 
 const Billing = () => {
+  const { t } = useTranslation();
   const { credits } = useCredits();
   const [downloading, setDownloading] = useState<string | null>(null);
 
@@ -60,6 +67,12 @@ const Billing = () => {
     });
   };
 
+  const currentPlanPrice = credits.plan === 'free' 
+    ? 0 
+    : credits.plan === 'pro' 
+      ? PLANS_PRICING.pro.monthly 
+      : PLANS_PRICING.business.monthly;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -75,8 +88,8 @@ const Billing = () => {
                 <Receipt className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Facturation</h1>
-                <p className="text-muted-foreground">Gérez votre abonnement et vos factures</p>
+                <h1 className="text-3xl font-bold text-foreground">{t('billing.title')}</h1>
+                <p className="text-muted-foreground">{t('billing.subtitle')}</p>
               </div>
             </div>
 
@@ -85,7 +98,7 @@ const Billing = () => {
               <div className="lg:col-span-2 glass-card rounded-2xl p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  Plan actuel
+                  {t('billing.current_plan')}
                 </h3>
                 
                 <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl">
@@ -95,12 +108,15 @@ const Billing = () => {
                       <Badge variant="secondary">Actif</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Renouvellement le {credits.resetDate.toLocaleDateString("fr-FR")}
+                      {credits.plan !== 'free' && (
+                        <span className="font-medium">{formatFCFA(currentPlanPrice)}/mois • </span>
+                      )}
+                      {t('billing.next_billing')}: {credits.resetDate.toLocaleDateString("fr-FR")}
                     </p>
                   </div>
                   <Link to="/pricing">
                     <Button variant="outline">
-                      {credits.plan === "free" ? "Upgrade" : "Changer de plan"}
+                      {credits.plan === "free" ? t('billing.upgrade') : "Changer de plan"}
                     </Button>
                   </Link>
                 </div>
@@ -109,16 +125,18 @@ const Billing = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">Moyen de paiement</span>
+                    <Smartphone className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm">{t('billing.payment_method')}</span>
                   </div>
                   {credits.plan !== "free" ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">•••• 4242</span>
-                      <Button variant="ghost" size="sm">Modifier</Button>
+                      <span className="text-sm">MTN Mobile Money •••• 3901</span>
+                      <Button variant="ghost" size="sm">{t('billing.change_payment')}</Button>
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Aucun</span>
+                    <Link to="/pricing">
+                      <Button variant="ghost" size="sm">{t('billing.add_payment')}</Button>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -133,13 +151,14 @@ const Billing = () => {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                Historique des factures
+                {t('billing.history')}
               </h3>
 
-              {invoices.length === 0 ? (
+              {credits.plan === 'free' ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune facture pour le moment</p>
+                  <p className="text-sm mt-2">Passez à un plan payant pour voir votre historique</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -155,13 +174,13 @@ const Billing = () => {
                         <div>
                           <p className="font-medium">{invoice.id}</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatDate(invoice.date)} • Plan {invoice.plan}
+                            {formatDate(invoice.date)} • Plan {invoice.plan} • {invoice.method}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="font-medium">{invoice.amount.toFixed(2)}€</p>
+                          <p className="font-medium">{formatFCFA(invoice.amount)}</p>
                           <Badge 
                             variant="outline" 
                             className="text-green-500 border-green-500/30"
@@ -189,13 +208,10 @@ const Billing = () => {
 
               {credits.plan !== "free" && (
                 <div className="mt-6 pt-6 border-t border-border">
-                  <a 
-                    href="#" 
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
-                  >
-                    Gérer l'abonnement sur Stripe
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Paiements sécurisés par Lygos Pay
+                  </p>
                 </div>
               )}
             </div>

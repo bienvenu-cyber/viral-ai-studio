@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { 
   Check, 
   Zap, 
@@ -8,85 +9,61 @@ import {
   Building2, 
   ArrowRight,
   Crown,
-  Users,
-  Infinity
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
 import Navbar from "@/components/layout/Navbar";
-
-const plans = [
-  {
-    id: "free",
-    name: "Free",
-    description: "Parfait pour découvrir Viral",
-    price: { monthly: 0, yearly: 0 },
-    icon: Zap,
-    color: "text-muted-foreground",
-    bgColor: "bg-secondary/50",
-    features: [
-      "50 crédits/mois",
-      "3 projets max",
-      "Templates basiques",
-      "Export HTML/CSS",
-      "Support communauté",
-    ],
-    limitations: [
-      "Pas de domaine personnalisé",
-      "Badge Viral sur les sites",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    description: "Pour les créateurs sérieux",
-    price: { monthly: 19, yearly: 190 },
-    icon: Sparkles,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    popular: true,
-    features: [
-      "500 crédits/mois",
-      "Projets illimités",
-      "Tous les templates",
-      "Domaine personnalisé",
-      "Intégration GitHub",
-      "Support prioritaire",
-      "Analytics basiques",
-      "Pas de badge Viral",
-    ],
-    limitations: [],
-  },
-  {
-    id: "business",
-    name: "Business",
-    description: "Pour les équipes et agences",
-    price: { monthly: 49, yearly: 490 },
-    icon: Building2,
-    color: "text-purple-400",
-    bgColor: "bg-purple-500/10",
-    features: [
-      "2000 crédits/mois",
-      "Projets illimités",
-      "Templates premium",
-      "Collaboration équipe",
-      "API access",
-      "White-label",
-      "Analytics avancés",
-      "Support dédié 24/7",
-      "SSO / SAML",
-    ],
-    limitations: [],
-  },
-];
+import { PLANS_PRICING, formatFCFA } from "@/services/lygos";
 
 const Pricing = () => {
+  const { t } = useTranslation();
   const [isYearly, setIsYearly] = useState(false);
   const { isAuthenticated } = useAuth();
   const { credits } = useCredits();
   const navigate = useNavigate();
+
+  const plans = [
+    {
+      id: "free",
+      name: t('pricing.free.name'),
+      description: t('pricing.free.description'),
+      price: PLANS_PRICING.free,
+      icon: Zap,
+      color: "text-muted-foreground",
+      bgColor: "bg-secondary/50",
+      features: t('pricing.free.features', { returnObjects: true }) as string[],
+      limitations: [
+        "Pas de domaine personnalisé",
+        "Badge Viral sur les sites",
+      ],
+    },
+    {
+      id: "pro",
+      name: t('pricing.pro.name'),
+      description: t('pricing.pro.description'),
+      price: PLANS_PRICING.pro,
+      icon: Sparkles,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+      popular: true,
+      features: t('pricing.pro.features', { returnObjects: true }) as string[],
+      limitations: [],
+    },
+    {
+      id: "business",
+      name: t('pricing.business.name'),
+      description: t('pricing.business.description'),
+      price: PLANS_PRICING.business,
+      icon: Building2,
+      color: "text-purple-400",
+      bgColor: "bg-purple-500/10",
+      features: t('pricing.business.features', { returnObjects: true }) as string[],
+      limitations: [],
+    },
+  ];
 
   const handleSelectPlan = (planId: string) => {
     if (!isAuthenticated) {
@@ -116,27 +93,27 @@ const Pricing = () => {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary text-sm font-medium mb-6">
               <Crown className="h-4 w-4" />
-              Pricing
+              {t('nav.pricing')}
             </span>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Choisissez votre plan
+              {t('pricing.title')}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Des tarifs simples et transparents. Commencez gratuitement, évoluez quand vous êtes prêt.
+              {t('pricing.subtitle')}
             </p>
 
             {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4 mt-8">
               <span className={`text-sm ${!isYearly ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                Mensuel
+                {t('pricing.monthly')}
               </span>
               <Switch 
                 checked={isYearly} 
                 onCheckedChange={setIsYearly}
               />
               <span className={`text-sm ${isYearly ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                Annuel
-                <span className="ml-2 text-xs text-primary font-medium">-17%</span>
+                {t('pricing.yearly')}
+                <span className="ml-2 text-xs text-primary font-medium">{t('pricing.save')}</span>
               </span>
             </div>
           </motion.div>
@@ -161,7 +138,7 @@ const Pricing = () => {
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                        Plus populaire
+                        {t('pricing.popular')}
                       </span>
                     </div>
                   )}
@@ -176,16 +153,14 @@ const Pricing = () => {
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{price}€</span>
-                      {price > 0 && (
-                        <span className="text-muted-foreground">
-                          /{isYearly ? "an" : "mois"}
-                        </span>
-                      )}
+                      <span className="text-3xl font-bold">{formatFCFA(price)}</span>
                     </div>
+                    <span className="text-muted-foreground text-sm">
+                      {price > 0 ? (isYearly ? t('pricing.per_year') : t('pricing.per_month')) : ''}
+                    </span>
                     {isYearly && price > 0 && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        soit {Math.round(price / 12)}€/mois
+                        soit {formatFCFA(Math.round(price / 12))}/mois
                       </p>
                     )}
                   </div>
@@ -199,13 +174,13 @@ const Pricing = () => {
                     {isCurrentPlan ? (
                       <>
                         <Check className="h-4 w-4 mr-2" />
-                        Plan actuel
+                        {t('pricing.current_plan')}
                       </>
                     ) : plan.id === "free" ? (
-                      "Commencer gratuitement"
+                      t('pricing.start_free')
                     ) : (
                       <>
-                        Passer à {plan.name}
+                        {t('pricing.upgrade')}
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </>
                     )}
@@ -244,10 +219,12 @@ const Pricing = () => {
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
               Pour les grandes équipes et les besoins spécifiques, contactez-nous pour un plan sur mesure.
             </p>
-            <Button variant="outline" size="lg">
-              Contacter l'équipe commerciale
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+            <Link to="/contact">
+              <Button variant="outline" size="lg">
+                Contacter l'équipe commerciale
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
           </motion.div>
 
           {/* FAQ Link */}
