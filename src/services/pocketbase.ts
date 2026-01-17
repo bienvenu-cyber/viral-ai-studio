@@ -13,8 +13,8 @@
 
 import PocketBase, { RecordModel } from 'pocketbase';
 
-// Configuration - set VITE_POCKETBASE_URL in your environment
-const POCKETBASE_URL = import.meta.env.VITE_POCKETBASE_URL || '';
+// PocketBase Configuration - Railway deployment
+const POCKETBASE_URL = import.meta.env.VITE_POCKETBASE_URL || 'https://pocketbase-production-3636.up.railway.app';
 
 // Initialize PocketBase client
 export const pb = new PocketBase(POCKETBASE_URL);

@@ -5,16 +5,13 @@ import {
   Bot, 
   User, 
   Sparkles, 
-  ChevronDown, 
   PanelLeftClose, 
   PanelLeft,
-  Zap,
-  Code2,
-  Palette,
-  Layout,
   Trash2,
   Copy,
-  MoreHorizontal
+  MoreHorizontal,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,16 +21,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { isAIConfigured } from "@/services/ai";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  type?: string;
   timestamp: Date;
+  isError?: boolean;
 }
 
 interface AIChatSidebarProps {
@@ -43,25 +40,6 @@ interface AIChatSidebarProps {
   onToggleCollapse?: () => void;
 }
 
-const promptTypes = [
-  { id: "section", label: "Add Section", icon: <Layout className="h-4 w-4" /> },
-  { id: "hero", label: "Hero Section", icon: <Zap className="h-4 w-4" /> },
-  { id: "features", label: "Features Grid", icon: <Sparkles className="h-4 w-4" /> },
-  { id: "pricing", label: "Pricing Table", icon: <Code2 className="h-4 w-4" /> },
-  { id: "testimonials", label: "Testimonials", icon: <User className="h-4 w-4" /> },
-  { id: "footer", label: "Footer", icon: <Layout className="h-4 w-4" /> },
-  { id: "navbar", label: "Navigation", icon: <Layout className="h-4 w-4" /> },
-  { id: "cta", label: "Call to Action", icon: <Palette className="h-4 w-4" /> },
-];
-
-const quickPrompts = [
-  "Make it more modern",
-  "Add animations",
-  "Change colors to blue theme",
-  "Add more whitespace",
-  "Make it responsive",
-];
-
 const AIChatSidebar = ({ 
   onGenerate, 
   isGenerating = false, 
@@ -69,13 +47,15 @@ const AIChatSidebar = ({
   onToggleCollapse 
 }: AIChatSidebarProps) => {
   const [prompt, setPrompt] = useState("");
-  const [selectedType, setSelectedType] = useState(promptTypes[0]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi! I'm your AI assistant. Tell me what you want to create and I'll generate the HTML for you. You can select a component type or just describe what you need.",
+      content: isAIConfigured() 
+        ? "Bonjour ! Je suis votre assistant AI. Décrivez ce que vous voulez créer et je génèrerai le code HTML pour vous. Par exemple: 'Crée une section hero avec un titre accrocheur et un bouton CTA'"
+        : "⚠️ L'API AI n'est pas configurée. Veuillez ajouter la clé VITE_AI_API_KEY dans les secrets du projet pour activer la génération AI.",
       timestamp: new Date(),
+      isError: !isAIConfigured(),
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -94,7 +74,6 @@ const AIChatSidebar = ({
       id: Date.now().toString(),
       role: "user",
       content: prompt,
-      type: selectedType.label,
       timestamp: new Date(),
     };
 
@@ -103,12 +82,12 @@ const AIChatSidebar = ({
     setPrompt("");
 
     try {
-      await onGenerate(currentPrompt, selectedType.id);
+      await onGenerate(currentPrompt, "section");
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `I've added a ${selectedType.label.toLowerCase()} based on your request: "${currentPrompt}". You can see it in the canvas on the right. Want me to make any changes?`,
+        content: `J'ai ajouté le contenu basé sur votre demande: "${currentPrompt}". Vous pouvez le voir dans le canvas à droite. Voulez-vous que je fasse des modifications ?`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
@@ -116,8 +95,9 @@ const AIChatSidebar = ({
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error while generating the content. Please try again.",
+        content: "Désolé, une erreur s'est produite lors de la génération. Veuillez réessayer.",
         timestamp: new Date(),
+        isError: true,
       };
       setMessages((prev) => [...prev, errorMessage]);
     }
@@ -135,16 +115,16 @@ const AIChatSidebar = ({
       {
         id: "welcome",
         role: "assistant",
-        content: "Chat cleared! How can I help you create something amazing?",
+        content: "Chat effacé ! Comment puis-je vous aider à créer quelque chose ?",
         timestamp: new Date(),
       },
     ]);
-    toast.success("Chat cleared");
+    toast.success("Chat effacé");
   };
 
   const copyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
-    toast.success("Copied to clipboard");
+    toast.success("Copié dans le presse-papiers");
   };
 
   if (isCollapsed) {
@@ -196,8 +176,8 @@ const AIChatSidebar = ({
               <Sparkles className="h-5 w-5 text-primary-foreground" />
             </motion.div>
             <div>
-              <h2 className="font-semibold text-sm">AI Assistant</h2>
-              <p className="text-xs text-muted-foreground">Powered by AI</p>
+              <h2 className="font-semibold text-sm">Assistant AI</h2>
+              <p className="text-xs text-muted-foreground">Powered by Mistral AI</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -210,7 +190,7 @@ const AIChatSidebar = ({
               <DropdownMenuContent align="end" className="glass-card">
                 <DropdownMenuItem onClick={clearChat}>
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Clear chat
+                  Effacer le chat
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -227,11 +207,20 @@ const AIChatSidebar = ({
         
         {/* Status indicator */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-xs text-muted-foreground">Ready to generate</span>
+          {isAIConfigured() ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs text-muted-foreground">Prêt à générer</span>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="h-3 w-3 text-yellow-500" />
+              <span className="text-xs text-yellow-500">API non configurée</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -256,12 +245,14 @@ const AIChatSidebar = ({
                   whileHover={{ scale: 1.1 }}
                   className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${
                     message.role === "assistant"
-                      ? "bg-gradient-to-br from-primary to-blue-500 text-primary-foreground"
+                      ? message.isError 
+                        ? "bg-yellow-500/20 text-yellow-500"
+                        : "bg-gradient-to-br from-primary to-blue-500 text-primary-foreground"
                       : "bg-secondary text-muted-foreground"
                   }`}
                 >
                   {message.role === "assistant" ? (
-                    <Bot className="h-4 w-4" />
+                    message.isError ? <AlertCircle className="h-4 w-4" /> : <Bot className="h-4 w-4" />
                   ) : (
                     <User className="h-4 w-4" />
                   )}
@@ -270,16 +261,12 @@ const AIChatSidebar = ({
                   <div
                     className={`p-3 rounded-2xl text-sm leading-relaxed ${
                       message.role === "assistant"
-                        ? "bg-secondary/80 rounded-tl-sm"
+                        ? message.isError 
+                          ? "bg-yellow-500/10 border border-yellow-500/20 rounded-tl-sm"
+                          : "bg-secondary/80 rounded-tl-sm"
                         : "bg-primary/20 text-foreground rounded-tr-sm"
                     }`}
                   >
-                    {message.type && message.role === "user" && (
-                      <span className="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
-                        {selectedType.icon}
-                        {message.type}
-                      </span>
-                    )}
                     <p>{message.content}</p>
                   </div>
                   
@@ -307,16 +294,11 @@ const AIChatSidebar = ({
               className="flex gap-3"
             >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-sm">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Sparkles className="h-4 w-4 text-primary-foreground" />
-                </motion.div>
+                <Loader2 className="h-4 w-4 text-primary-foreground animate-spin" />
               </div>
               <div className="flex-1 p-3 rounded-2xl rounded-tl-sm bg-secondary/80">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Generating</span>
+                  <span className="text-sm text-muted-foreground">Génération en cours</span>
                   <div className="flex gap-1">
                     {[0, 1, 2].map((i) => (
                       <motion.span
@@ -340,101 +322,48 @@ const AIChatSidebar = ({
 
       {/* Input Area */}
       <div className="p-4 border-t border-border/50 bg-card/80 backdrop-blur-sm space-y-3">
-        {/* Quick prompts */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {quickPrompts.map((qp) => (
-            <motion.button
-              key={qp}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                setPrompt(qp);
-                textareaRef.current?.focus();
-              }}
-              className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-secondary/80 text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/50 transition-colors"
-            >
-              {qp}
-            </motion.button>
-          ))}
-        </div>
-
-        {/* Component type buttons */}
-        <div className="flex flex-wrap gap-1.5">
-          {promptTypes.slice(0, 4).map((type) => (
-            <motion.button
-              key={type.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setSelectedType(type);
-                setPrompt(`Create a ${type.label.toLowerCase()}`);
-                textareaRef.current?.focus();
-              }}
-              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
-                selectedType.id === type.id
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              {type.icon}
-              {type.label}
-            </motion.button>
-          ))}
-        </div>
-
         {/* Input field */}
         <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0 h-11 gap-2">
-                {selectedType.icon}
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="glass-card" align="start">
-              {promptTypes.map((type) => (
-                <DropdownMenuItem
-                  key={type.id}
-                  onClick={() => setSelectedType(type)}
-                  className="flex items-center gap-2"
-                >
-                  {type.icon}
-                  {type.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <div className="flex-1 relative">
             <Textarea
               ref={textareaRef}
-              placeholder="Describe what you want to create..."
+              placeholder="Décrivez ce que vous voulez créer..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="min-h-[44px] max-h-32 py-3 pr-12 resize-none bg-secondary/50 border-border/50 text-sm rounded-xl focus:ring-2 focus:ring-primary/20"
-              rows={1}
+              disabled={!isAIConfigured()}
+              className="min-h-[60px] max-h-32 py-3 pr-12 resize-none bg-secondary/50 border-border/50 text-sm rounded-xl focus:ring-2 focus:ring-primary/20"
+              rows={2}
             />
             <motion.div
-              className="absolute right-1.5 top-1.5"
+              className="absolute right-1.5 bottom-1.5"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
               <Button
                 size="icon"
                 onClick={handleSubmit}
-                disabled={!prompt.trim() || isGenerating}
+                disabled={!prompt.trim() || isGenerating || !isAIConfigured()}
                 className={`h-8 w-8 rounded-lg ${
-                  prompt.trim() && !isGenerating
+                  prompt.trim() && !isGenerating && isAIConfigured()
                     ? "bg-gradient-to-r from-primary to-blue-500 text-primary-foreground shadow-lg shadow-primary/30"
                     : ""
                 }`}
               >
-                <Send className="h-4 w-4" />
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </motion.div>
           </div>
         </div>
+
+        {/* Hint */}
+        <p className="text-xs text-muted-foreground text-center">
+          Appuyez sur <kbd className="px-1.5 py-0.5 text-xs bg-secondary rounded">Entrée</kbd> pour générer
+        </p>
       </div>
     </motion.div>
   );
